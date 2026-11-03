@@ -3,84 +3,180 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ILKIN AI TRADER</title>
+<title>ILKIN OTC 15 SEC</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#080f20;color:#fff;font-family:Arial;padding:18px}
-h1{font-size:27px;color:#20d49b}
-p{color:#9eacc5}
-.card{background:#141e32;border:1px solid #293953;
-border-radius:18px;padding:17px;margin:15px 0}
-button,select{padding:13px;border:0;border-radius:10px;
-background:#20d49b;color:#07151b;font-weight:bold;font-size:15px}
-button{margin:4px}
-select{width:100%;margin:10px 0}
-#chart{height:480px;width:100%;border:0;border-radius:12px}
-.pairs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.pair{background:#202e47;color:white;border-radius:10px;padding:12px}
-small{color:#9eacc5}
+*{box-sizing:border-box}body{margin:0;background:#080f20;color:#fff;font-family:Arial;padding:14px}
+h1{color:#20d49b;margin:0;font-size:24px}p{color:#9eacc5;margin:6px 0}
+.card{background:#141e32;border:1px solid #293953;border-radius:16px;padding:14px;margin:12px 0}
+.pairs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pair{background:#202e47;border-radius:10px;padding:11px;text-align:center;cursor:pointer;border:2px solid transparent}
+.pair.active{border-color:#20d49b;background:#20d49b;color:#07151b;font-weight:bold}
+canvas{width:100%;height:420px;background:#0d1528;border-radius:12px}
+.signal{font-size:22px;font-weight:bold;padding:14px;border-radius:12px;text-align:center;margin:10px 0}
+.call{background:#20d49b;color:#07151b}.put{background:#ff4d6d;color:#fff}.wait{background:#202e47;color:#9eacc5}
+.row{display:flex;justify-content:space-between;font-size:13px}
+b{color:#fff}
 </style>
 </head>
 <body>
-<h1>ILKIN AI TRADER</h1>
-<p>FOREX WATCHLIST • LIVE CHARTS</p>
+<h1>ILKIN OTC • 15 SANİYƏ</h1>
+<p>OTC BAZAR - SÜNİ QİYMƏT • EMA 9/21 • RSI 14 (70/30)</p>
 
 <div class="card">
-<h3>10 VALYUTA CÜTÜ</h3>
 <div class="pairs" id="pairs"></div>
 </div>
 
 <div class="card">
-<h3>SEÇİLMİŞ VALYUTA</h3>
-<select id="symbol"></select>
-<p>Qrafik müddəti: 1 dəqiqə</p>
-<iframe id="chart" allowfullscreen></iframe>
-</div>
-
-<div class="card">
-<h3>ANALİZ PANELİ</h3>
-<p id="status">Qrafik seçilməsini gözləyir...</p>
-<p>EMA 9 / EMA 21 / RSI 14</p>
-<p>Avtomatik CALL/PUT siqnalı: hələ aktiv deyil.</p>
-<small>Qrafik məlumatları TradingView mənbəyindən gəlir.
-Olymp Trade qiymətləri ilə fərqlənə bilər.</small>
+<div class="row"><span>Seçilmiş: <b id="cur">EUR/USD OTC</b></span><span>TF: <b>15s</b></span><span>Qiymət: <b id="price">-</b></span></div>
+<canvas id="chart"></canvas>
+<div class="row"><span>EMA9: <b id="ema9">-</b></span><span>EMA21: <b id="ema21">-</b></span><span>RSI: <b id="rsi">-</b></span></div>
+<div id="sig" class="signal wait">Yüklənir...</div>
+<p id="info">Növbəti şamı gözləyirik... 80 yox, 70/30 ilə işləyirik.</p>
 </div>
 
 <script>
-const symbols=[
-"EUR/USD","GBP/USD","USD/JPY","AUD/USD",
-"USD/CAD","EUR/JPY","GBP/JPY","EUR/GBP",
-"NZD/USD","USD/CHF"
-];
+const OTC_PAIRS=["EUR/USD OTC","GBP/USD OTC","USD/JPY OTC","AUD/USD OTC","USD/CAD OTC","EUR/JPY OTC","GBP/JPY OTC","EUR/GBP OTC","NZD/USD OTC","USD/CHF OTC"];
+const basePrice={"EUR/USD OTC":1.0850,"GBP/USD OTC":1.2700,"USD/JPY OTC":148.50,"AUD/USD OTC":0.6500,"USD/CAD OTC":1.3600,"EUR/JPY OTC":161.0,"GBP/JPY OTC":188.0,"EUR/GBP OTC":0.8550,"NZD/USD OTC":0.6100,"USD/CHF OTC":0.8800};
 
-const select=document.getElementById("symbol");
-const pairs=document.getElementById("pairs");
-const chart=document.getElementById("chart");
-const status=document.getElementById("status");
+let curPair=OTC_PAIRS[0];
+let price=basePrice[curPair];
+let candles=[];
+let ctx=document.getElementById('chart').getContext('2d');
+let lastCandleTime=Date.now();
+let currentCandle={o:price,h:price,l:price,c:price};
 
-function loadPair(pair){
-select.value=pair;
-const code=pair.replace("/","");
-chart.src="https://s.tradingview.com/widgetembed/?symbol=FX%3A"+
-code+"&interval=1&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=%23141e32&theme=dark&style=1&timezone=Etc%2FUTC";
-status.textContent=pair+" qrafiki açıldı. Canlı qiymətləri yoxla.";
+function initCandles(){
+  candles=[];
+  let p=basePrice[curPair];
+  for(let i=0;i<50;i++){
+    let o=p;
+    let change=(Math.random()-0.5)*0.0015;
+    let c=o+change;
+    let h=Math.max(o,c)+Math.random()*0.0005;
+    let l=Math.min(o,c)-Math.random()*0.0005;
+    candles.push({o,h,l,c,time:Date.now()- (50-i)*15000});
+    p=c;
+  }
+  price=p;
+  currentCandle={o:price,h:price,l:price,c:price};
 }
 
-symbols.forEach(pair=>{
-let option=document.createElement("option");
-option.value=pair;
-option.textContent=pair;
-select.appendChild(option);
+function calcEMA(data, period){
+  if(data.length<period) return null;
+  let k=2/(period+1);
+  let ema=data.slice(0,period).reduce((a,b)=>a+b.c,0)/period;
+  for(let i=period;i<data.length;i++) ema=data[i].c*k + ema*(1-k);
+  return ema;
+}
+function calcRSI(data, period=14){
+  if(data.length<=period) return 50;
+  let gains=0,losses=0;
+  for(let i=data.length-period;i<data.length;i++){
+    let diff=data[i].c - data[i-1].c;
+    if(diff>=0) gains+=diff; else losses+=-diff;
+  }
+  if(losses==0) return 70;
+  let rs=gains/losses;
+  return 100 - (100/(1+rs));
+}
 
-let button=document.createElement("button");
-button.className="pair";
-button.textContent=pair;
-button.onclick=()=>loadPair(pair);
-pairs.appendChild(button);
+function draw(){
+  const W=ctx.canvas.width=ctx.canvas.clientWidth*2;
+  const H=ctx.canvas.height=420*2;
+  ctx.clearRect(0,0,W,H);
+  if(candles.length<2) return;
+  let all=[...candles, currentCandle];
+  let min=Math.min(...all.map(c=>c.l));
+  let max=Math.max(...all.map(c=>c.h));
+  let pad=(max-min)*0.1||0.001;
+  min-=pad; max+=pad;
+  
+  let cw=W/(all.length*1.2);
+  all.forEach((c,i)=>{
+    let x=i*(W/all.length)+10;
+    let yO=H - ((c.o-min)/(max-min))*H*0.8 - H*0.1;
+    let yC=H - ((c.c-min)/(max-min))*H*0.8 - H*0.1;
+    let yH=H - ((c.h-min)/(max-min))*H*0.8 - H*0.1;
+    let yL=H - ((c.l-min)/(max-min))*H*0.8 - H*0.1;
+    let col=c.c>=c.o?'#20d49b':'#ff4d6d';
+    ctx.strokeStyle=col; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x+cw/2,yH); ctx.lineTo(x+cw/2,yL); ctx.stroke();
+    ctx.fillStyle=col;
+    ctx.fillRect(x, Math.min(yO,yC), cw, Math.max(2,Math.abs(yO-yC)));
+  });
+}
+
+function updateSignal(){
+  let ema9=calcEMA(candles,9);
+  let ema21=calcEMA(candles,21);
+  let rsi=calcRSI(candles,14);
+  document.getElementById('ema9').textContent=ema9?ema9.toFixed(5):'-';
+  document.getElementById('ema21').textContent=ema21?ema21.toFixed(5):'-';
+  document.getElementById('rsi').textContent=rsi?rsi.toFixed(1):'-';
+  document.getElementById('price').textContent=price.toFixed(5);
+  
+  let sigEl=document.getElementById('sig');
+  let info=document.getElementById('info');
+  
+  // Sənin taktikan: böyük şamdan sonra gözlə
+  let last=candles[candles.length-1];
+  let bodySize=Math.abs(last.c-last.o);
+  let isBig=bodySize>0.0008;
+
+  if(isBig){
+    sigEl.className='signal wait';
+    sigEl.textContent='⏸️ GÖZLƏ - Böyük şam gəldi, sənin dediyin kimi növbəti şamı gözlə';
+    info.textContent='Böyük şam = 80-dən aşağı açılsa da dərhal alma, RSI 60-a düşsün gözlə.';
+    return;
+  }
+
+  if(ema9 && ema21){
+    if(ema9>ema21 && rsi>50 && rsi<70){
+      sigEl.className='signal call';
+      sigEl.textContent='📈 CALL - OTC AL - Növbəti 15s şam Yaşıl gözlənilir';
+      info.textContent='EMA9 yuxarıda, RSI 70 altında, sənin strategiyana uyğun giriş olar.';
+    } else if(ema9<ema21 && rsi<50 && rsi>30){
+      sigEl.className='signal put';
+      sigEl.textContent='📉 PUT - OTC SAT - Növbəti 15s şam Qırmızı gözlənilir';
+      info.textContent='EMA9 aşağıda, RSI 30 üstündə, sənin strategiyana uyğun giriş olar.';
+    } else {
+      sigEl.className='signal wait';
+      sigEl.textContent='⏸️ GÖZLƏ - 15s bağlansın, RSI 70/30 kənarında deyil';
+      info.textContent='Sənin dediyin kimi: 80 yox 70/30, növbəti şamı gözlə.';
+    }
+  }
+}
+
+// OTC qiymət generatoru - 15 saniyə
+setInterval(()=>{
+  let vol=0.0004;
+  if(curPair.includes('JPY')) vol=0.04;
+  price+= (Math.random()-0.5)*vol;
+  currentCandle.c=price;
+  currentCandle.h=Math.max(currentCandle.h,price);
+  currentCandle.l=Math.min(currentCandle.l,price);
+  
+  if(Date.now()-lastCandleTime>=15000){
+    candles.push({...currentCandle,time:Date.now()});
+    if(candles.length>60) candles.shift();
+    currentCandle={o:price,h:price,l:price,c:price};
+    lastCandleTime=Date.now();
+    updateSignal();
+  }
+  draw();
+},200);
+
+function selectPair(p){
+  curPair=p; price=basePrice[p];
+  document.getElementById('cur').textContent=p;
+  document.querySelectorAll('.pair').forEach(b=>b.classList.toggle('active', b.textContent===p));
+  initCandles(); draw(); updateSignal();
+}
+
+let div=document.getElementById('pairs');
+OTC_PAIRS.forEach(p=>{
+  let b=document.createElement('div');
+  b.className='pair'; b.textContent=p;
+  b.onclick=()=>selectPair(p);
+  div.appendChild(b);
 });
-
-select.onchange=()=>loadPair(select.value);
-loadPair("EUR/USD");
-</script>
-</body>
-</html>
