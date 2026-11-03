@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ILKIN AI TRADER</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080f20;color:#fff;font-family:Arial;padding:18px}
+h1{font-size:27px;color:#20d49b}
+p{color:#9eacc5}
+.card{background:#141e32;border:1px solid #293953;
+border-radius:18px;padding:17px;margin:15px 0}
+button,select{padding:13px;border:0;border-radius:10px;
+background:#20d49b;color:#07151b;font-weight:bold;font-size:15px}
+button{margin:4px}
+select{width:100%;margin:10px 0}
+#chart{height:480px;width:100%;border:0;border-radius:12px}
+.pairs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pair{background:#202e47;color:white;border-radius:10px;padding:12px}
+small{color:#9eacc5}
+</style>
+</head>
+<body>
+<h1>ILKIN AI TRADER</h1>
+<p>FOREX WATCHLIST • LIVE CHARTS</p>
+
+<div class="card">
+<h3>10 VALYUTA CÜTÜ</h3>
+<div class="pairs" id="pairs"></div>
+</div>
+
+<div class="card">
+<h3>SEÇİLMİŞ VALYUTA</h3>
+<select id="symbol"></select>
+<p>Qrafik müddəti: 1 dəqiqə</p>
+<iframe id="chart" allowfullscreen></iframe>
+</div>
+
+<div class="card">
+<h3>ANALİZ PANELİ</h3>
+<p id="status">Qrafik seçilməsini gözləyir...</p>
+<p>EMA 9 / EMA 21 / RSI 14</p>
+<p>Avtomatik CALL/PUT siqnalı: hələ aktiv deyil.</p>
+<small>Qrafik məlumatları TradingView mənbəyindən gəlir.
+Olymp Trade qiymətləri ilə fərqlənə bilər.</small>
+</div>
+
+<script>
+const symbols=[
+"EUR/USD","GBP/USD","USD/JPY","AUD/USD",
+"USD/CAD","EUR/JPY","GBP/JPY","EUR/GBP",
+"NZD/USD","USD/CHF"
+];
+
+const select=document.getElementById("symbol");
+const pairs=document.getElementById("pairs");
+const chart=document.getElementById("chart");
+const status=document.getElementById("status");
+
+function loadPair(pair){
+select.value=pair;
+const code=pair.replace("/","");
+chart.src="https://s.tradingview.com/widgetembed/?symbol=FX%3A"+
+code+"&interval=1&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=%23141e32&theme=dark&style=1&timezone=Etc%2FUTC";
+status.textContent=pair+" qrafiki açıldı. Canlı qiymətləri yoxla.";
+}
+
+symbols.forEach(pair=>{
+let option=document.createElement("option");
+option.value=pair;
+option.textContent=pair;
+select.appendChild(option);
+
+let button=document.createElement("button");
+button.className="pair";
+button.textContent=pair;
+button.onclick=()=>loadPair(pair);
+pairs.appendChild(button);
+});
+
+select.onchange=()=>loadPair(select.value);
+loadPair("EUR/USD");
+</script>
+</body>
+</html>
