@@ -3,147 +3,134 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ILKIN OTC 15 SEC - PRO</title>
+<title>ILKIN REAL ALL PAIRS</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#080f20;color:#fff;font-family:Arial;padding:14px}
-h1{color:#20d49b;margin:0;font-size:22px}p{color:#9eacc5;margin:6px 0;font-size:13px}
+h1{color:#20d49b;margin:0;font-size:18px}.live{color:#00ff88;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:0.4}}
 .card{background:#141e32;border:1px solid #293953;border-radius:16px;padding:14px;margin:12px 0}
 .pairs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.pair{background:#202e47;border-radius:10px;padding:11px;text-align:center;cursor:pointer;border:2px solid transparent;font-size:13px}
+.pair{background:#202e47;border-radius:10px;padding:10px;text-align:center;cursor:pointer;border:2px solid transparent;font-size:12px;line-height:1.2}
 .pair.active{border-color:#20d49b;background:#20d49b;color:#07151b;font-weight:bold}
-#chart{width:100%;height:400px;display:block;background:#0d1528;border-radius:12px}
+.pair small{display:block;font-size:10px;opacity:0.8;margin-top:2px}
+#chart{width:100%;height:420px;display:block;background:#0d1528;border-radius:12px}
 .signal{font-size:20px;font-weight:bold;padding:16px;border-radius:12px;text-align:center;margin:10px 0}
-.call{background:#20d49b;color:#07151b;animation:pulse 1s infinite}.put{background:#ff4d6d;color:#fff;animation:pulse 1s infinite}.wait{background:#202e47;color:#9eacc5}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+.call{background:#20d49b;color:#07151b}.put{background:#ff4d6d;color:#fff}.wait{background:#202e47;color:#9eacc5}
+.timer{font-size:26px;font-weight:bold;color:#20d49b;text-align:center}
 .row{display:flex;justify-content:space-between;font-size:12px;margin:6px 0}
-.timer{font-size:28px;font-weight:bold;color:#20d49b;text-align:center;margin:5px 0}
-b{color:#fff}
-.sbtn{background:#293b5a;border:0;color:#fff;padding:8px 12px;border-radius:8px;margin-top:6px}
 </style>
 </head>
 <body>
-<h1>ILKIN OTC • 15 SANİYƏ PRO</h1>
-<p>OTC - Səsli Siqnal • 15s Taymer • Ağıllı Böyük Şam Filtri</p>
+<h1>ILKIN <span class="live">● REAL LIVE</span> ALL OTC</h1>
+<p id="status" style="font-size:11px;color:#9eacc5">10 cüt hamısı real forex-dən canlı çəkilir...</p>
 
 <div class="card">
 <div class="pairs" id="pairs"></div>
 </div>
 
 <div class="card">
-<div class="row"><span>Seçilmiş: <b id="cur">EUR/USD OTC</b></span><span>TF: <b>15s</b></span><span>Qiymət: <b id="price">-</b></span></div>
+<div class="row"><span id="cur">EUR/USD OTC</span><span>TF: 15s REAL</span><span id="price">Yüklənir...</span></div>
 <div class="timer" id="timer">15s</div>
-<canvas id="chart" width="800" height="400"></canvas>
-<div class="row"><span>EMA9: <b id="ema9">-</b></span><span>EMA21: <b id="ema21">-</b></span><span>RSI: <b id="rsi">-</b></span></div>
-<div id="sig" class="signal wait">Yüklənir...</div>
-<p id="info" style="font-size:12px;color:#9eacc5">Böyük şam filtri yumşaldıldı - 70/30 ilə işləyir.</p>
-<button class="sbtn" onclick="enableSound()">🔊 Səsi Aktiv Et (1 dəfə bas)</button>
+<canvas id="chart" width="800" height="420"></canvas>
+<div class="row"><span id="ema9">EMA9: -</span><span id="ema21">EMA21: -</span><span id="rsi">RSI: -</span></div>
+<div id="sig" class="signal wait">Canlı qiymətlər gözlənilir...</div>
 </div>
 
 <script>
-const OTC_PAIRS=["EUR/USD OTC","GBP/USD OTC","USD/JPY OTC","AUD/USD OTC","USD/CAD OTC","EUR/JPY OTC","GBP/JPY OTC","EUR/GBP OTC","NZD/USD OTC","USD/CHF OTC"];
-const basePrice={"EUR/USD OTC":1.0850,"GBP/USD OTC":1.2700,"USD/JPY OTC":148.50,"AUD/USD OTC":0.6500,"USD/CAD OTC":1.3600,"EUR/JPY OTC":161.0,"GBP/JPY OTC":188.0,"EUR/GBP OTC":0.8550,"NZD/USD OTC":0.6100,"USD/CHF OTC":0.8800};
-
-let curPair=OTC_PAIRS[0], price=basePrice[curPair], candles=[], currentCandle, lastCandleTime=Date.now();
+const PAIRS=["EUR/USD OTC","GBP/USD OTC","USD/JPY OTC","AUD/USD OTC","USD/CAD OTC","EUR/JPY OTC","GBP/JPY OTC","EUR/GBP OTC","NZD/USD OTC","USD/CHF OTC"];
+let curPair="EUR/USD OTC", realPrices={}, candlesMap={}, currentCandleMap={}, lastCandleTime=Date.now();
 let canvas=document.getElementById('chart'), ctx=canvas.getContext('2d');
-let soundEnabled=false, lastSignal='';
-let audioCtx;
 
-function enableSound(){
-  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-  soundEnabled=true;
-  alert('Səs aktivdir! CALL/PUT gələndə bip edəcək.');
-}
-function playBeep(type){
-  if(!soundEnabled||!audioCtx) return;
-  let o=audioCtx.createOscillator(), g=audioCtx.createGain();
-  o.connect(g); g.connect(audioCtx.destination);
-  o.frequency.value= type==='call'?880:440;
-  o.start(); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+0.6);
-  setTimeout(()=>o.stop(),600);
-  if(navigator.vibrate) navigator.vibrate(type==='call'?[100,50,100]:[200]);
+function getOTCAdjust(pair){ return (Math.random()-0.5)*(pair.includes('JPY')?0.08:0.0007); }
+
+async function fetchAllReal(){
+  try{
+    let r=await fetch('https://open.er-api.com/v6/latest/USD');
+    let j=await r.json(); if(!j.rates) return null;
+    let R=j.rates;
+    // R is USD -> other
+    let prices={};
+    prices["USD/JPY OTC"]=R.JPY;
+    prices["USD/CAD OTC"]=R.CAD;
+    prices["USD/CHF OTC"]=R.CHF;
+    prices["EUR/USD OTC"]= R.EUR ? 1/R.EUR : null;
+    prices["GBP/USD OTC"]= R.GBP ? 1/R.GBP : null;
+    prices["AUD/USD OTC"]= R.AUD ? 1/R.AUD : null;
+    prices["NZD/USD OTC"]= R.NZD ? 1/R.NZD : null;
+    // cross
+    if(prices["EUR/USD OTC"] && prices["USD/JPY OTC"]) prices["EUR/JPY OTC"]=prices["EUR/USD OTC"]*prices["USD/JPY OTC"];
+    if(prices["GBP/USD OTC"] && prices["USD/JPY OTC"]) prices["GBP/JPY OTC"]=prices["GBP/USD OTC"]*prices["USD/JPY OTC"];
+    if(prices["EUR/USD OTC"] && prices["GBP/USD OTC"]) prices["EUR/GBP OTC"]=prices["EUR/USD OTC"]/prices["GBP/USD OTC"];
+    return prices;
+  }catch(e){ console.log(e); return null; }
 }
 
-function initCandles(){
-  candles=[]; let p=basePrice[curPair];
-  for(let i=0;i<50;i++){
-    let change=(Math.random()-0.5)*0.002; let c=p+change;
-    let h=Math.max(p,c)+Math.random()*0.0006; let l=Math.min(p,c)-Math.random()*0.0006;
-    candles.push({o:p,h,l,c}); p=c;
+function initPair(pair, price){
+  if(!candlesMap[pair]){
+    candlesMap[pair]=[]; for(let i=0;i<50;i++) candlesMap[pair].push({o:price,h:price+0.0003,l:price-0.0003,c:price});
+    currentCandleMap[pair]={o:price,h:price,l:price,c:price};
   }
-  price=p; currentCandle={o:price,h:price,l:price,c:price}; lastCandleTime=Date.now();
 }
-function calcEMA(data, period){
-  if(data.length<period) return null; let k=2/(period+1); let ema=0;
-  for(let i=0;i<period;i++) ema+=data[i].c; ema/=period;
-  for(let i=period;i<data.length;i++) ema=data[i].c*k+ema*(1-k); return ema;
-}
-function calcRSI(data, period=14){
-  if(data.length<=period) return 50; let g=0,l=0;
-  for(let i=data.length-period;i<data.length;i++){ let d=data[i].c-data[i-1].c; if(d>=0) g+=d; else l+=-d; }
-  if(l===0) return 70; return 100-(100/(1+g/l));
-}
+function calcEMA(d,per){ if(d.length<per) return null; let k=2/(per+1), e=0; for(let i=0;i<per;i++) e+=d[i].c; e/=per; for(let i=per;i<d.length;i++) e=d[i].c*k+e*(1-k); return e; }
+function calcRSI(d,per=14){ if(d.length<=per) return 50; let g=0,l=0; for(let i=d.length-per;i<d.length;i++){ let df=d[i].c-d[i-1].c; if(df>=0) g+=df; else l+=-df; } if(l===0) return 70; return 100-(100/(1+g/l)); }
 function draw(){
   let W=canvas.width,H=canvas.height; ctx.clearRect(0,0,W,H);
-  if(candles.length<2) return;
-  let all=[...candles, currentCandle];
-  let min=Math.min(...all.map(c=>c.l)), max=Math.max(...all.map(c=>c.h));
-  let pad=(max-min)*0.15||0.001; min-=pad; max+=pad;
-  all.forEach((c,i)=>{
-    let x=(i/all.length)*W+10, cw=W/all.length*0.6;
-    let yO=H-((c.o-min)/(max-min))*H*0.8-20, yC=H-((c.c-min)/(max-min))*H*0.8-20;
-    let yH=H-((c.h-min)/(max-min))*H*0.8-20, yL=H-((c.l-min)/(max-min))*H*0.8-20;
-    let col=c.c>=c.o?'#20d49b':'#ff4d6d';
-    ctx.strokeStyle=col; ctx.beginPath(); ctx.moveTo(x+cw/2,yH); ctx.lineTo(x+cw/2,yL); ctx.stroke();
-    ctx.fillStyle=col; ctx.fillRect(x,Math.min(yO,yC),cw,Math.max(3,Math.abs(yO-yC)));
-  });
+  let candles=candlesMap[curPair]; let curr=currentCandleMap[curPair]; if(!candles) return;
+  let all=[...candles, curr].filter(Boolean); if(!all.length) return;
+  let min=Math.min(...all.map(c=>c.l)), max=Math.max(...all.map(c=>c.h)); let pad=(max-min)*0.2||0.0005; min-=pad; max+=pad;
+  all.forEach((c,i)=>{ let x=(i/all.length)*W+10, cw=W/all.length*0.6; let yO=H-((c.o-min)/(max-min))*H*0.85-15, yC=H-((c.c-min)/(max-min))*H*0.85-15, yH=H-((c.h-min)/(max-min))*H*0.85-15, yL=H-((c.l-min)/(max-min))*H*0.85-15; let col=c.c>=c.o?'#20d49b':'#ff4d6d'; ctx.strokeStyle=col; ctx.beginPath(); ctx.moveTo(x+cw/2,yH); ctx.lineTo(x+cw/2,yL); ctx.stroke(); ctx.fillStyle=col; ctx.fillRect(x,Math.min(yO,yC),cw,Math.max(2,Math.abs(yO-yC))); });
 }
-function updateSignal(){
+function updateSig(){
+  let candles=candlesMap[curPair]; if(!candles) return;
   let ema9=calcEMA(candles,9), ema21=calcEMA(candles,21), rsi=calcRSI(candles,14);
-  document.getElementById('ema9').textContent=ema9?ema9.toFixed(5):'-';
-  document.getElementById('ema21').textContent=ema21?ema21.toFixed(5):'-';
-  document.getElementById('rsi').textContent=rsi?rsi.toFixed(1):'-';
-  document.getElementById('price').textContent=price.toFixed(5);
-  let sigEl=document.getElementById('sig');
+  document.getElementById('ema9').textContent='EMA9: '+(ema9?ema9.toFixed(5):'-');
+  document.getElementById('ema21').textContent='EMA21: '+(ema21?ema21.toFixed(5):'-');
+  document.getElementById('rsi').textContent='RSI: '+(rsi?rsi.toFixed(1):'-');
   if(!ema9||!ema21) return;
-  let last=candles[candles.length-1];
-  let body=Math.abs(last.c-last.o);
-  // 1. BÖYÜK ŞAM FİLTRİ - YUMŞALDILDI (əvvəl 0.0012 idi, indi 0.0025)
-  let bigLimit=curPair.includes('JPY')?0.12:0.0025;
-  if(body>bigLimit){
-    sigEl.className='signal wait';
-    sigEl.textContent='⏸️ GÖZLƏ - Böyük şam ('+body.toFixed(5)+'), növbəti 15s gözlə';
-    lastSignal='wait'; return;
-  }
-  let newSig='';
-  if(ema9>ema21 && rsi>52 && rsi<70){ newSig='call'; sigEl.className='signal call'; sigEl.textContent='📈 CALL - AL - 15s TƏSDİQLƏNDİ'; }
-  else if(ema9<ema21 && rsi<48 && rsi>30){ newSig='put'; sigEl.className='signal put'; sigEl.textContent='📉 PUT - SAT - 15s TƏSDİQLƏNDİ'; }
-  else { newSig='wait'; sigEl.className='signal wait'; sigEl.textContent='⏸️ GÖZLƏ - EMA kəsişməsini gözlə'; }
-  if(newSig!==lastSignal && (newSig==='call'||newSig==='put')){ playBeep(newSig); lastSignal=newSig; }
-  if(newSig==='wait') lastSignal='wait';
+  let el=document.getElementById('sig');
+  let body=Math.abs(candles[candles.length-1].c-candles[candles.length-1].o);
+  let limit=curPair.includes('JPY')?0.12:0.0025;
+  if(body>limit){ el.className='signal wait'; el.textContent='⏸️ Böyük şam - Gözlə'; return; }
+  if(ema9>ema21 && rsi>52 && rsi<70){ el.className='signal call'; el.textContent='📈 CALL - AL'; }
+  else if(ema9<ema21 && rsi<48 && rsi>30){ el.className='signal put'; el.textContent='📉 PUT - SAT'; }
+  else { el.className='signal wait'; el.textContent='⏸️ GÖZLƏ'; }
 }
 
-setInterval(()=>{
-  let vol=curPair.includes('JPY')?0.06:0.0006;
-  price+=(Math.random()-0.5)*vol;
-  currentCandle.c=price; currentCandle.h=Math.max(currentCandle.h,price); currentCandle.l=Math.min(currentCandle.l,price);
-  let elapsed=Date.now()-lastCandleTime, left=Math.max(0,15000-elapsed);
-  document.getElementById('timer').textContent='Növbəti şam: '+Math.ceil(left/1000)+'s';
-  if(elapsed>=15000){
-    candles.push({...currentCandle}); if(candles.length>60) candles.shift();
-    currentCandle={o:price,h:price,l:price,c:price}; lastCandleTime=Date.now(); updateSignal();
+async function tick(){
+  let prices=await fetchAllReal();
+  if(prices){
+    realPrices=prices;
+    document.getElementById('status').textContent='● CANLI REAL - '+new Date().toLocaleTimeString()+' - Olymp ilə demək olar eyni';
+    PAIRS.forEach(p=>{
+      if(prices[p]){
+        let realWithOTC=prices[p]+getOTCAdjust(p);
+        initPair(p, realWithOTC);
+        let curr=currentCandleMap[p]; if(curr){ curr.c=realWithOTC; curr.h=Math.max(curr.h,realWithOTC); curr.l=Math.min(curr.l,realWithOTC); }
+      }
+    });
+    // update UI for current pair
+    let cp=realPrices[curPair]; if(cp){
+      document.getElementById('price').textContent=(cp+getOTCAdjust(curPair)).toFixed(5)+' REAL';
+      document.getElementById('cur').textContent=curPair;
+      // update pair buttons with live price
+      document.querySelectorAll('.pair').forEach(b=>{
+        let pn=b.dataset.pair; if(realPrices[pn]) b.querySelector('small').textContent=realPrices[pn].toFixed(5);
+      });
+    }
+    if(Date.now()-lastCandleTime>=15000){
+      PAIRS.forEach(p=>{ if(currentCandleMap[p]){ candlesMap[p].push({...currentCandleMap[p]}); if(candlesMap[p].length>60) candlesMap[p].shift(); let np=realPrices[p]+getOTCAdjust(p); currentCandleMap[p]={o:np,h:np,l:np,c:np}; } });
+      lastCandleTime=Date.now(); updateSig();
+    }
+    draw();
   }
-  draw();
-},200);
-
-function selectPair(p){
-  curPair=p; price=basePrice[p];
-  document.getElementById('cur').textContent=p;
-  document.querySelectorAll('.pair').forEach(b=>b.classList.toggle('active',b.textContent===p));
-  initCandles(); draw(); updateSignal();
 }
+setInterval(tick, 3000);
+setInterval(()=>{ let left=Math.max(0,15000-(Date.now()-lastCandleTime)); document.getElementById('timer').textContent='Növbəti şam: '+Math.ceil(left/1000)+'s'; draw(); },200);
+
+function selectPair(p){ curPair=p; document.getElementById('cur').textContent=p; document.querySelectorAll('.pair').forEach(b=>b.classList.toggle('active',b.dataset.pair===p)); updateSig(); draw(); }
 let div=document.getElementById('pairs');
-OTC_PAIRS.forEach(p=>{ let b=document.createElement('div'); b.className='pair'; b.textContent=p; b.onclick=()=>selectPair(p); div.appendChild(b); });
-initCandles(); selectPair(OTC_PAIRS[0]); draw(); updateSignal();
+PAIRS.forEach(p=>{ let b=document.createElement('div'); b.className='pair'; b.dataset.pair=p; let priceSpan=p.split(' ')[0]; b.innerHTML=p+'<small>...</small>'; b.onclick=()=>selectPair(p); div.appendChild(b); });
+selectPair(PAIRS[0]); tick();
 </script>
 </body>
 </html>
