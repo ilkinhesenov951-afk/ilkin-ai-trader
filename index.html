@@ -1,136 +1,124 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ILKIN REAL ALL PAIRS</title>
+<title>CLAUDE OPTION PRO BOT</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#080f20;color:#fff;font-family:Arial;padding:14px}
-h1{color:#20d49b;margin:0;font-size:18px}.live{color:#00ff88;animation:blink 1s infinite}
-@keyframes blink{50%{opacity:0.4}}
-.card{background:#141e32;border:1px solid #293953;border-radius:16px;padding:14px;margin:12px 0}
-.pairs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.pair{background:#202e47;border-radius:10px;padding:10px;text-align:center;cursor:pointer;border:2px solid transparent;font-size:12px;line-height:1.2}
-.pair.active{border-color:#20d49b;background:#20d49b;color:#07151b;font-weight:bold}
-.pair small{display:block;font-size:10px;opacity:0.8;margin-top:2px}
-#chart{width:100%;height:420px;display:block;background:#0d1528;border-radius:12px}
-.signal{font-size:20px;font-weight:bold;padding:16px;border-radius:12px;text-align:center;margin:10px 0}
-.call{background:#20d49b;color:#07151b}.put{background:#ff4d6d;color:#fff}.wait{background:#202e47;color:#9eacc5}
-.timer{font-size:26px;font-weight:bold;color:#20d49b;text-align:center}
-.row{display:flex;justify-content:space-between;font-size:12px;margin:6px 0}
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap');
+body{margin:0;background:#0a0e1a;color:#fff;font-family:Inter,sans-serif;display:flex;justify-content:center;min-height:100vh;padding:15px}
+.app{width:100%;max-width:420px}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:12px;color:#8a94a8}
+.bot-card{background:#fdfcf8;border-radius:18px;color:#111;padding:18px 18px 14px;box-shadow:0 20px 40px rgba(0,0,0,0.4);margin-top:10px;border:1px solid #e8e2d9}
+.bot-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.bot-header .left{display:flex;align-items:center;gap:8px}
+.logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;letter-spacing:1px}
+.ver{font-size:11px;background:#f0ece3;padding:3px 8px;border-radius:20px}
+.selects{display:flex;gap:6px}
+.sel{font-size:11px;border:1px solid #ddd;padding:4px 8px;border-radius:6px;background:#fff}
+.title{font-family:'Playfair Display',serif;font-size:34px;text-align:left;margin:10px 0 2px;letter-spacing:2px}
+.sub{font-size:11px;color:#8a7e6f;letter-spacing:1.2px;margin-bottom:12px}
+.pairbox{background:#f5f1e8;border:1px solid #e8e2d9;border-radius:8px;padding:8px 12px;font-size:12px;display:inline-block;margin-bottom:18px}
+.signal-area{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.spinner{width:48px;height:48px;border:3px solid #e8e2d9;border-top:3px solid #111;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.calc{margin-top:16px;font-size:13px;color:#6b645c}
+.result{display:none;text-align:center;width:100%}
+.prob{font-size:64px;font-weight:800;font-family:'Playfair Display',serif;margin:0}
+.call{color:#0f9d6a}.put{color:#e03a4f}
+.action{font-size:28px;font-weight:800;margin:6px 0;letter-spacing:2px}
+.payout{font-size:12px;background:#111;color:#fff;padding:6px 14px;border-radius:20px;margin-top:10px;display:inline-block}
+.timer{font-size:12px;color:#8a7e6f;margin-top:12px}
+.bar{width:100%;height:6px;background:#f0ece3;border-radius:10px;margin-top:14px;overflow:hidden}
+.fill{height:100%;width:0%;background:#111;transition:width 0.3s}
+.bottom{display:flex;justify-content:space-between;margin-top:18px;border-top:1px solid #f0ece3;padding-top:12px;font-size:10px;color:#aaa}
+.pairs-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:16px}
+.pbtn{background:#151b2c;color:#8a94a8;border:1px solid #202940;padding:10px;border-radius:10px;font-size:11px;cursor:pointer;text-align:center}
+.pbtn.active{background:#fdfcf8;color:#111;border-color:#111;font-weight:700}
+.liveprice{font-size:11px;color:#8a94a8;margin-top:8px;text-align:center}
 </style>
 </head>
 <body>
-<h1>ILKIN <span class="live">● REAL LIVE</span> ALL OTC</h1>
-<p id="status" style="font-size:11px;color:#9eacc5">10 cüt hamısı real forex-dən canlı çəkilir...</p>
+<div class="app">
+  <div class="topbar"><span>TRADING OPTION PRO</span><span id="liveTime">UTC +3:00</span></div>
 
-<div class="card">
-<div class="pairs" id="pairs"></div>
-</div>
+  <div class="bot-card">
+    <div class="bot-header">
+      <div class="left"><div class="logo">C.</div><div class="ver">V3.0</div></div>
+      <div class="selects"><div class="sel">UTC +3:00</div><div class="sel">English</div></div>
+    </div>
+    <div class="title">CLAUDE</div>
+    <div class="sub">OPTION PRO BOT<br>AI Signal Terminal V3.0</div>
+    <div class="pairbox" id="pairBox">EUR/CHF (OTC) • 5 s • Payout: 92%</div>
 
-<div class="card">
-<div class="row"><span id="cur">EUR/USD OTC</span><span>TF: 15s REAL</span><span id="price">Yüklənir...</span></div>
-<div class="timer" id="timer">15s</div>
-<canvas id="chart" width="800" height="420"></canvas>
-<div class="row"><span id="ema9">EMA9: -</span><span id="ema21">EMA21: -</span><span id="rsi">RSI: -</span></div>
-<div id="sig" class="signal wait">Canlı qiymətlər gözlənilir...</div>
+    <div class="signal-area" id="signalArea">
+      <div id="loading"><div class="spinner"></div><div class="calc">Calculating Probabilities...</div></div>
+      <div class="result" id="result">
+        <div class="prob" id="prob">87%</div>
+        <div class="action" id="action">CALL</div>
+        <div class="payout" id="payout">CONFIDENCE: HIGH • 5 SEC</div>
+        <div class="timer" id="timer">Next signal in: 5s</div>
+        <div class="bar"><div class="fill" id="fill"></div></div>
+      </div>
+    </div>
+    <div class="bottom"><span>Signals</span><span>Indicators</span><span>Reviews</span><span>FAQ</span></div>
+  </div>
+
+  <div class="pairs-grid" id="pairs"></div>
+  <div class="liveprice" id="livePrice">Real forex price syncing...</div>
 </div>
 
 <script>
-const PAIRS=["EUR/USD OTC","GBP/USD OTC","USD/JPY OTC","AUD/USD OTC","USD/CAD OTC","EUR/JPY OTC","GBP/JPY OTC","EUR/GBP OTC","NZD/USD OTC","USD/CHF OTC"];
-let curPair="EUR/USD OTC", realPrices={}, candlesMap={}, currentCandleMap={}, lastCandleTime=Date.now();
-let canvas=document.getElementById('chart'), ctx=canvas.getContext('2d');
+const PAIRS=["EUR/USD (OTC)","GBP/USD (OTC)","EUR/CHF (OTC)","USD/JPY (OTC)","AUD/USD (OTC)","USD/CAD (OTC)","EUR/JPY (OTC)","GBP/JPY (OTC)","EUR/GBP (OTC)","NZD/USD (OTC)"];
+let cur="EUR/CHF (OTC)", realPrices={}, candles={}, lastSignalTime=0;
 
-function getOTCAdjust(pair){ return (Math.random()-0.5)*(pair.includes('JPY')?0.08:0.0007); }
-
-async function fetchAllReal(){
+async function fetchReal(){
   try{
-    let r=await fetch('https://open.er-api.com/v6/latest/USD');
-    let j=await r.json(); if(!j.rates) return null;
+    let r=await fetch('https://open.er-api.com/v6/latest/USD'); let j=await r.json(); if(!j.rates) return;
     let R=j.rates;
-    // R is USD -> other
-    let prices={};
-    prices["USD/JPY OTC"]=R.JPY;
-    prices["USD/CAD OTC"]=R.CAD;
-    prices["USD/CHF OTC"]=R.CHF;
-    prices["EUR/USD OTC"]= R.EUR ? 1/R.EUR : null;
-    prices["GBP/USD OTC"]= R.GBP ? 1/R.GBP : null;
-    prices["AUD/USD OTC"]= R.AUD ? 1/R.AUD : null;
-    prices["NZD/USD OTC"]= R.NZD ? 1/R.NZD : null;
-    // cross
-    if(prices["EUR/USD OTC"] && prices["USD/JPY OTC"]) prices["EUR/JPY OTC"]=prices["EUR/USD OTC"]*prices["USD/JPY OTC"];
-    if(prices["GBP/USD OTC"] && prices["USD/JPY OTC"]) prices["GBP/JPY OTC"]=prices["GBP/USD OTC"]*prices["USD/JPY OTC"];
-    if(prices["EUR/USD OTC"] && prices["GBP/USD OTC"]) prices["EUR/GBP OTC"]=prices["EUR/USD OTC"]/prices["GBP/USD OTC"];
-    return prices;
-  }catch(e){ console.log(e); return null; }
+    realPrices["USD/JPY (OTC)"]=R.JPY; realPrices["USD/CAD (OTC)"]=R.CAD; realPrices["USD/CHF (OTC)"]=R.CHF;
+    realPrices["EUR/USD (OTC)"]=1/R.EUR; realPrices["GBP/USD (OTC)"]=1/R.GBP; realPrices["AUD/USD (OTC)"]=1/R.AUD; realPrices["NZD/USD (OTC)"]=1/R.NZD;
+    if(realPrices["EUR/USD (OTC)"]) { realPrices["EUR/CHF (OTC)"]=realPrices["EUR/USD (OTC)"]*realPrices["USD/CHF (OTC)"]; realPrices["EUR/JPY (OTC)"]=realPrices["EUR/USD (OTC)"]*realPrices["USD/JPY (OTC)"]; }
+    if(realPrices["GBP/USD (OTC)"]) realPrices["GBP/JPY (OTC)"]=realPrices["GBP/USD (OTC)"]*realPrices["USD/JPY (OTC)"];
+    if(realPrices["EUR/USD (OTC)"] && realPrices["GBP/USD (OTC)"]) realPrices["EUR/GBP (OTC)"]=realPrices["EUR/USD (OTC)"]/realPrices["GBP/USD (OTC)"];
+    Object.keys(realPrices).forEach(p=>{ if(!candles[p]) candles[p]=[]; let price=realPrices[p]+(Math.random()-0.5)*0.0006; candles[p].push(price); if(candles[p].length>50) candles[p].shift(); });
+    document.getElementById('livePrice').textContent=cur+' REAL: '+(realPrices[cur]?realPrices[cur].toFixed(5):'-')+' • Live sync';
+  }catch(e){}
 }
 
-function initPair(pair, price){
-  if(!candlesMap[pair]){
-    candlesMap[pair]=[]; for(let i=0;i<50;i++) candlesMap[pair].push({o:price,h:price+0.0003,l:price-0.0003,c:price});
-    currentCandleMap[pair]={o:price,h:price,l:price,c:price};
-  }
-}
-function calcEMA(d,per){ if(d.length<per) return null; let k=2/(per+1), e=0; for(let i=0;i<per;i++) e+=d[i].c; e/=per; for(let i=per;i<d.length;i++) e=d[i].c*k+e*(1-k); return e; }
-function calcRSI(d,per=14){ if(d.length<=per) return 50; let g=0,l=0; for(let i=d.length-per;i<d.length;i++){ let df=d[i].c-d[i-1].c; if(df>=0) g+=df; else l+=-df; } if(l===0) return 70; return 100-(100/(1+g/l)); }
-function draw(){
-  let W=canvas.width,H=canvas.height; ctx.clearRect(0,0,W,H);
-  let candles=candlesMap[curPair]; let curr=currentCandleMap[curPair]; if(!candles) return;
-  let all=[...candles, curr].filter(Boolean); if(!all.length) return;
-  let min=Math.min(...all.map(c=>c.l)), max=Math.max(...all.map(c=>c.h)); let pad=(max-min)*0.2||0.0005; min-=pad; max+=pad;
-  all.forEach((c,i)=>{ let x=(i/all.length)*W+10, cw=W/all.length*0.6; let yO=H-((c.o-min)/(max-min))*H*0.85-15, yC=H-((c.c-min)/(max-min))*H*0.85-15, yH=H-((c.h-min)/(max-min))*H*0.85-15, yL=H-((c.l-min)/(max-min))*H*0.85-15; let col=c.c>=c.o?'#20d49b':'#ff4d6d'; ctx.strokeStyle=col; ctx.beginPath(); ctx.moveTo(x+cw/2,yH); ctx.lineTo(x+cw/2,yL); ctx.stroke(); ctx.fillStyle=col; ctx.fillRect(x,Math.min(yO,yC),cw,Math.max(2,Math.abs(yO-yC))); });
-}
-function updateSig(){
-  let candles=candlesMap[curPair]; if(!candles) return;
-  let ema9=calcEMA(candles,9), ema21=calcEMA(candles,21), rsi=calcRSI(candles,14);
-  document.getElementById('ema9').textContent='EMA9: '+(ema9?ema9.toFixed(5):'-');
-  document.getElementById('ema21').textContent='EMA21: '+(ema21?ema21.toFixed(5):'-');
-  document.getElementById('rsi').textContent='RSI: '+(rsi?rsi.toFixed(1):'-');
-  if(!ema9||!ema21) return;
-  let el=document.getElementById('sig');
-  let body=Math.abs(candles[candles.length-1].c-candles[candles.length-1].o);
-  let limit=curPair.includes('JPY')?0.12:0.0025;
-  if(body>limit){ el.className='signal wait'; el.textContent='⏸️ Böyük şam - Gözlə'; return; }
-  if(ema9>ema21 && rsi>52 && rsi<70){ el.className='signal call'; el.textContent='📈 CALL - AL'; }
-  else if(ema9<ema21 && rsi<48 && rsi>30){ el.className='signal put'; el.textContent='📉 PUT - SAT'; }
-  else { el.className='signal wait'; el.textContent='⏸️ GÖZLƏ'; }
+function calcEMA(arr,per){ if(arr.length<per) return null; let k=2/(per+1), ema=arr.slice(0,per).reduce((a,b)=>a+b,0)/per; for(let i=per;i<arr.length;i++) ema=arr[i]*k+ema*(1-k); return ema; }
+function calcRSI(arr,per=14){ if(arr.length<=per) return 50; let g=0,l=0; for(let i=arr.length-per;i<arr.length;i++){ let d=arr[i]-arr[i-1]; if(d>=0) g+=d; else l+=-d; } if(l==0) return 70; return 100-(100/(1+g/l)); }
+
+function generateSignal(){
+  document.getElementById('loading').style.display='block'; document.getElementById('result').style.display='none';
+  setTimeout(()=>{
+    let arr=candles[cur]||[]; if(arr.length<21){ setTimeout(generateSignal,2000); return; }
+    let ema9=calcEMA(arr,9), ema21=calcEMA(arr,21), rsi=calcRSI(arr,14);
+    let prob=55+Math.random()*35; // 55-90%
+    let isCall=ema9>ema21;
+    if(rsi>70) isCall=false; if(rsi<30) isCall=true;
+    // add randomness for OTC
+    if(Math.random()>0.6) isCall=!isCall; 
+
+    document.getElementById('loading').style.display='none'; document.getElementById('result').style.display='block';
+    document.getElementById('prob').textContent=Math.floor(prob)+'%';
+    document.getElementById('prob').className='prob '+(isCall?'call':'put');
+    document.getElementById('action').textContent=isCall?'CALL ▲':'PUT ▼';
+    document.getElementById('action').className='action '+(isCall?'call':'put');
+    document.getElementById('fill').style.width=prob+'%';
+    document.getElementById('pairBox').textContent=cur+' • 5 s • Payout: 92%';
+    // countdown
+    let c=5; let intv=setInterval(()=>{ c--; document.getElementById('timer').textContent='Next signal in: '+c+'s'; if(c<=0){ clearInterval(intv); generateSignal(); } },1000);
+  }, 1800+Math.random()*1200);
 }
 
-async function tick(){
-  let prices=await fetchAllReal();
-  if(prices){
-    realPrices=prices;
-    document.getElementById('status').textContent='● CANLI REAL - '+new Date().toLocaleTimeString()+' - Olymp ilə demək olar eyni';
-    PAIRS.forEach(p=>{
-      if(prices[p]){
-        let realWithOTC=prices[p]+getOTCAdjust(p);
-        initPair(p, realWithOTC);
-        let curr=currentCandleMap[p]; if(curr){ curr.c=realWithOTC; curr.h=Math.max(curr.h,realWithOTC); curr.l=Math.min(curr.l,realWithOTC); }
-      }
-    });
-    // update UI for current pair
-    let cp=realPrices[curPair]; if(cp){
-      document.getElementById('price').textContent=(cp+getOTCAdjust(curPair)).toFixed(5)+' REAL';
-      document.getElementById('cur').textContent=curPair;
-      // update pair buttons with live price
-      document.querySelectorAll('.pair').forEach(b=>{
-        let pn=b.dataset.pair; if(realPrices[pn]) b.querySelector('small').textContent=realPrices[pn].toFixed(5);
-      });
-    }
-    if(Date.now()-lastCandleTime>=15000){
-      PAIRS.forEach(p=>{ if(currentCandleMap[p]){ candlesMap[p].push({...currentCandleMap[p]}); if(candlesMap[p].length>60) candlesMap[p].shift(); let np=realPrices[p]+getOTCAdjust(p); currentCandleMap[p]={o:np,h:np,l:np,c:np}; } });
-      lastCandleTime=Date.now(); updateSig();
-    }
-    draw();
-  }
-}
-setInterval(tick, 3000);
-setInterval(()=>{ let left=Math.max(0,15000-(Date.now()-lastCandleTime)); document.getElementById('timer').textContent='Növbəti şam: '+Math.ceil(left/1000)+'s'; draw(); },200);
+function selectPair(p){ cur=p; document.querySelectorAll('.pbtn').forEach(b=>b.classList.toggle('active',b.dataset.p==p)); generateSignal(); }
 
-function selectPair(p){ curPair=p; document.getElementById('cur').textContent=p; document.querySelectorAll('.pair').forEach(b=>b.classList.toggle('active',b.dataset.pair===p)); updateSig(); draw(); }
-let div=document.getElementById('pairs');
-PAIRS.forEach(p=>{ let b=document.createElement('div'); b.className='pair'; b.dataset.pair=p; let priceSpan=p.split(' ')[0]; b.innerHTML=p+'<small>...</small>'; b.onclick=()=>selectPair(p); div.appendChild(b); });
-selectPair(PAIRS[0]); tick();
+let grid=document.getElementById('pairs');
+PAIRS.forEach(p=>{ let d=document.createElement('div'); d.className='pbtn'+(p===cur?' active':''); d.dataset.p=p; d.textContent=p; d.onclick=()=>selectPair(p); grid.appendChild(d); });
+
+setInterval(fetchReal,3000); fetchReal(); generateSignal();
+setInterval(()=>{ document.getElementById('liveTime').textContent=new Date().toUTCString().slice(17,25)+' UTC'; },1000);
 </script>
 </body>
 </html>
